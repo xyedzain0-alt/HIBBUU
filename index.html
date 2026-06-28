@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>sorry?</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #e59ba8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+            position: relative;
+        }
+
+        /* Floating Hearts Background Animation */
+        .heart-particle {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 20px;
+            pointer-events: none;
+            animation: floatUp 4s linear infinite;
+            bottom: -20px;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-105vh) translateX(50px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .card {
+            text-align: center;
+            padding: 25px 15px;
+            width: 100%;
+            max-width: 320px; 
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .gif-container {
+            width: 150px; 
+            height: 150px;
+            margin: 0 auto 15px auto;
+            background-color: #ffffff;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .gif-container img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+        }
+
+        h2 {
+            color: #ffffff;
+            font-size: 24px; 
+            font-weight: 700;
+            margin: 10px 0 2px 0;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        p {
+            color: #f7f7f7;
+            font-size: 14px;
+            margin: 0 0 25px 0;
+            font-weight: 500;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            position: relative;
+            height: 50px;
+        }
+
+        button {
+            padding: 12px 26px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            min-width: 95px;
+            transition: transform 0.1s ease;
+        }
+
+        #yesBtn {
+            background-color: #ffffff;
+            color: #e59ba8;
+        }
+        
+        #yesBtn:active {
+            transform: scale(0.95);
+        }
+
+        #noBtn {
+            background-color: #333333;
+            color: #ffffff;
+            position: absolute;
+            z-index: 999;
+            transition: all 0.15s ease-out;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://pub-c5e31b5cdafb419a86a69d5d340a9929.r2.dev/prem_ki_naiyya_remix.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="card">
+        <div class="gif-container">
+            <img id="statusGif" src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3NndXp6Ym10Z3V6cHZ0ZndsdW9wZWh3YmFndXN0cmR0bDJ0ZXZjZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/Cdf860GvX8pE4/giphy.gif" alt="Cute Sad Cat">
+        </div>
+        <h2 id="question">sorry yrr? 🤗</h2>
+        <p id="subtext">nhi to ekhi option h</p>
+
+        <div class="btn-container">
+            <button id="yesBtn" onclick="selectYes()">Yes</button>
+            <button id="noBtn" onmouseover="moveNoButton()" ontouchstart="moveNoButton(event)">No</button>
+        </div>
+    </div>
+
+    <script>
+        let stage = 0;
+        let musicStarted = false;
+
+        // 👇 EDIT THIS LINE WITH YOUR INSTAGRAM USERNAME 👇
+        const INSTAGRAM_USERNAME = "your_username"; // e.g., "cristiano" or "instagram" (without the @ symbol)
+
+        const questions = [
+            "sorry yrrr? 🤗",
+            "Please think again! 🤔",
+            "Ek aur baar Soch lo! 🥺",
+            "beautiful pls Man jao na! Kitna code likh waogi 😭"
+        ];
+
+        const subtexts = [
+            "nhi to ekhi option h",
+            "itni jaldi na maat bolo! 🥺",
+            "kyu aisa kar rahi ho Pls Maan jao 😭",
+            "bhot glt baat hai yr x"
+        ];
+
+        // Verified active direct-link Giphy URLs
+        const gifs = [
+            "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3NndXp6Ym10Z3V6cHZ0ZndsdW9wZWh3YmFndXN0cmR0bDJ0ZXZjZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/Cdf860GvX8pE4/giphy.gif",          
+            "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN6cmN4Z3R5Y3d6bXRuMWh5Nm95NnU4YnR0eWd3Y280MTh3dHh0ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/9Y1leFKs6I0co89Zgq/giphy.gif",          
+            "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnk1N3Nnd3p4N3ptMmtwYm9pZndpcnR3bzh5N3M2amw5ZXh0bXNjaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/7SF5scGB2AFrbJJxa3/giphy.gif",          
+            "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbW8xdm9mN2M2MzZwbXhkNDMxbDZ0YW80Y2tveHp0bW5reXlpcHdzdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/K6bOat9ILUSvC/giphy.gif"           
+        ];
+
+        // 1. Live Background Generator
+        function createHeart() {
+            const heart = document.createElement("div");
+            heart.classList.add("heart-particle");
+            heart.innerHTML = ["❤️", "💖", "💝", "🌸"][Math.floor(Math.random() * 4)];
+            heart.style.left = Math.random() * 100 + "vw";
+            heart.style.animationDuration = (Math.random() * 2 + 3) + "s"; 
+            heart.style.fontSize = (Math.random() * 15 + 15) + "px";
+            document.body.appendChild(heart);
+            
+            setTimeout(() => { heart.remove(); }, 5000);
+        }
+        setInterval(createHeart, 400);
+
+        // 2. Safe Music Player
+        function startMusic() {
+            if (!musicStarted) {
+                const audio = document.getElementById("bgMusic");
+                audio.play()
+                    .then(() => { musicStarted = true; })
+                    .catch(() => console.log("Bypassed default gesture lock. Explicit play deferred to solid click."));
+            }
+        }
+
+        // 3. Evasive No Button Engine
+        function moveNoButton(event) {
+            if(event) event.preventDefault(); // Kills multi-touch clicking loopholes on mobile
+            
+            startMusic(); 
+            stage++;
+
+            if (stage < 4) {
+                document.getElementById("question").innerText = questions[stage];
+                document.getElementById("subtext").innerText = subtexts[stage];
+                document.getElementById("statusGif").src = gifs[stage];
+            }
+
+            const noBtn = document.getElementById("noBtn");
+            const padding = 60; 
+            
+            const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+            const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+
+            const randomX = Math.max(padding / 2, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(padding / 2, Math.floor(Math.random() * maxY));
+
+            noBtn.style.position = "fixed";
+            noBtn.style.left = randomX + "px";
+            noBtn.style.top = randomY + "px";
+
+            // Yes button grows to slowly overtake user screen real-estate
+            const yesBtn = document.getElementById("yesBtn");
+            const currentSize = parseFloat(window.getComputedStyle(yesBtn).fontSize);
+            if (currentSize < 45) { 
+                yesBtn.style.fontSize = (currentSize + 2.5) + "px";
+                yesBtn.style.padding = (parseFloat(window.getComputedStyle(yesBtn).paddingTop) + 1.5) + "px " + (parseFloat(window.getComputedStyle(yesBtn).paddingLeft) + 3) + "px";
+            }
+        }
+
+        // 4. Final Processing & Redirection Execution
+        function selectYes() {
+            const audio = document.getElementById("bgMusic");
+            audio.play().catch(e => console.log(e));
+            
+            document.getElementById("question").innerText = "I knew it! ap bht achi ho 🥰";
+            document.getElementById("subtext").innerText = "Opening Instagram... ❤️";
+            document.getElementById("statusGif").src = "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHg1cjNkcXl4bnVtcXU0M3hkbW1wM3RjdjRzMDR3NjR0eW0xbTFqdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/l4pTdcifPZaXv5U5O/giphy.gif"; 
+            
+            document.querySelector(".btn-container").style.display = "none";
+
+            // Gives them 2.5 seconds to watch the final victory cat animation before jumping to Instagram
+            setTimeout(() => {
+                window.location.href = `https://instagram.com/_u/${INSTAGRAM_USERNAME}`;
+                
+                // Fallback in case the native app protocol link fails on certain desktop configs
+                setTimeout(() => {
+                    window.location.href = `https://instagram.com/${INSTAGRAM_USERNAME}`;
+                }, 500);
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
